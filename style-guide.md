@@ -11,18 +11,27 @@ The designs were created to the following widths:
 
 ### Primary
 
-- Moderate blue: hsl(238, 40%, 52%)
-- Soft Red: hsl(358, 79%, 66%)
-- Light grayish blue: hsl(239, 57%, 85%)
-- Pale red: hsl(357, 100%, 86%)
+    colors: {
+      'm-blue': '#5457b6',
+      's-red': '#ed6468',
+      'lg-blue': '#c3c4ef',
+      'p-red': '#ffb8bb',
+      'd-blue': '#324152',
+      'g-blue': '#67727e',
+      'l-gray': '#eaecf1',
+      'vl-gray': '#eaecf1'
+    }
+- 'm-blue': 'hsl(238, 40%, 52%)',
+- 's-red:': 'hsl(358, 79%, 66%)',
+- 'lg-blue': 'hsl(239, 57%, 85%)',
+- 'p-red': 'hsl(357, 100%, 86%)'
 
 ### Neutral
 
-- Dark blue: hsl(212, 24%, 26%)
-- Grayish Blue: hsl(211, 10%, 45%)
-- Light gray: hsl(223, 19%, 93%)
-- Very light gray: hsl(228, 33%, 97%)
-- White: hsl(0, 0%, 100%)
+'d-blue': 'hsl(212, 24%, 26%)',
+'g-blue': 'hsl(211, 10%, 45%)',
+'l-gray': 'hsl(223, 19%, 93%)',
+'vl-gray': 'hsl(228, 33%, 97%)'
 
 ## Typography
 
