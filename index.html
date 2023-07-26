@@ -9,12 +9,48 @@
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
   <title>Frontend Mentor | Interactive comments section</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* The modal overlay */
+    .modal-overlay {
+      /* Position the overlay */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50; /* Higher than the modal */
+    }
+  
+    /* Style for the modal content box */
+    .modal-content {
+      /* Add your desired width and other styles here */
+      width: 400px;
+    }
+    </style>
 </head>
 <body class="bg-[#eaecf1]">
   <main class="relative gap-1 mx-auto w-1/2 mt-32 rounded mb-0" id="jsonContainer">
   </main>
   <div id="comments"></div>
-  
+  <div id="myModal" class="modal-overlay hidden" onclick="closeModal()">
+    <div class="bg-white p-8 rounded shadow-lg w-[400px]" onclick="event.stopPropagation();">
+      <span class="absolute top-4 right-4 cursor-pointer text-gray-600" onclick="closeModal()">&times;</span>
+      <p id="modalText" class="text-xl mb-4"><strong>Delete Comment</strong></p>
+      <p id="modalText" class="text-lg mb-4">Are you sure you want to delete this comment? This will remove the comment and can't be undone.</p>
+      <input type="hidden" id="commentIdToDelete" />
+      <input type="hidden" id="replyIdToDelete" />
+      <div class="flex gap-5 items-center justify-center">
+        <button class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-3 rounded font-semibold" onclick="closeModal()">NO, CANCEL</button>
+        <button class="bg-red-500 hover:bg-red-600 text-white px-5 py-3 rounded font-semibold" onclick="confirmDelete()">YES, DELETE</button>
+      </div>
+    </div>
+  </div>
+  <div id="message"></div>
   <script>
     // 'data' değişkenini global alanda tanımlıyoruz
     let data;
@@ -122,8 +158,8 @@ try {
         <div class="absolute w-full bg-white rounded mt-5">
             <div class="flex pb-5 pt-5 items-center">
                 <img src="${currentUserImage}" alt="${currentUserUsername}" class="w-10 absolute left-10 top-7">
-                <input type="text" placeholder="Add a comment..." class="border border-slate-200 placeholder-slate-400 contrast-more:border-slate-400 contrast-more:placeholder-slate-500 w-3/4 my-auto mt-2 p-5 mx-auto">
-                <button class="ml-auto absolute right-5 top-7 text-white bg-indigo-800 h-10 inline-flex items-center px-5 rounded"><strong>SEND</strong></button>
+                <input type="text" id="newCommentContent" placeholder="Add a comment..." class="border border-slate-200 placeholder-slate-400 contrast-more:border-slate-400 contrast-more:placeholder-slate-500 w-3/4 my-auto mt-2 p-5 mx-auto">
+                <button onclick="sendNewComment()" class="ml-auto absolute right-5 top-7 text-white bg-indigo-800 h-10 inline-flex items-center px-5 rounded"><strong>SEND</strong></button>
             </div>
         </div>
     `;
@@ -131,6 +167,23 @@ try {
 } catch (error) {
     console.error('Error fetching data:', error);
 }
+}
+
+function sendNewComment() {
+  // Input alanındaki değeri alın
+  var inputElement = document.getElementById("newCommentContent");
+  var yazilanYazi = inputElement.value;
+
+  // Yeni bir div öğesi oluşturun
+  var yeniDiv = document.createElement("div");
+
+  // Yeni div'in içeriğini ayarlayın
+  yeniDiv.innerHTML = yazilanYazi;
+
+  // Yeni div'i "yazdirilanYazilar" div öğesine ekleyin
+  var yazdirilanYazilarElement = document.getElementById("message");
+  yazdirilanYazilarElement.appendChild(yeniDiv);
+  inputElement.value = "";
 }
 
 // Arttırma ve azaltma işlemleri için fonksiyonlar
@@ -169,32 +222,56 @@ console.log('Edit button clicked for comment:', commentId);
 }
 
 function deleteComment(commentId, replyId) {
-  // Eğer replyId tanımlı ise, yanıtı silme işlemi yapılacak
-  if (replyId !== undefined) {
-    // Uyarı mesajı göster
-    const deleteReply = confirm("Are you sure you want to delete this reply?");
-    if (deleteReply) {
+    // Eğer replyId tanımlı ise, yanıtı silme işlemi yapılacak
+    if (replyId !== undefined) {
+      // Uyarı mesajını modal olarak göster
+      const modal = document.getElementById('myModal');
+      modal.style.display = 'flex';
+
+      // Yorum ve yanıt id'sini saklayalım
+      document.getElementById('commentIdToDelete').value = commentId;
+      document.getElementById('replyIdToDelete').value = replyId;
+    } else {
+      // Eğer replyId tanımlı değilse, yorumu silme işlemi yapılacak
+      // Uyarı mesajını modal olarak göster
+      const modal = document.getElementById('myModal');
+      modal.style.display = 'flex';
+
+      // Sadece yorum id'sini saklayalım
+      document.getElementById('commentIdToDelete').value = commentId;
+      document.getElementById('replyIdToDelete').value = ''; // replyId boş bırakalım
+    }
+  }
+
+  // Modalı gizlemek için fonksiyon (aynı kaldı)
+  function closeModal() {
+    const modal = document.getElementById('myModal');
+    modal.style.display = 'none';
+  }
+
+  // Silmeyi onayladığında çalışacak fonksiyon (güncellendi)
+  function confirmDelete() {
+    closeModal(); // Modalı gizlemek için
+
+    // Silme işlemlerini gerçekleştir
+    const commentId = document.getElementById('commentIdToDelete').value;
+    const replyId = document.getElementById('replyIdToDelete').value;
+
+    // Burada yapılacak işlemi tanımlayabilirsiniz
+    if (replyId !== '') {
       console.log('Delete button clicked for reply:', replyId);
-      // Burada yapılacak işlemi tanımlayabilirsiniz (örneğin, yanıtı silme işlemi)
       const replyElement = document.getElementById(`reply-${replyId}`);
       if (replyElement) {
         replyElement.remove();
       }
-    }
-  } else {
-    // Eğer replyId tanımlı değilse, yorumu silme işlemi yapılacak
-    // Uyarı mesajı göster
-    const deleteComment = confirm("Are you sure you want to delete this comment?");
-    if (deleteComment) {
+    } else {
       console.log('Delete button clicked for comment:', commentId);
-      // Burada yapılacak işlemi tanımlayabilirsiniz (örneğin, yorumu silme işlemi)
       const commentElement = document.getElementById(`comment-${commentId}`);
       if (commentElement) {
         commentElement.remove();
       }
     }
   }
-}
 
 function replyComment(currentUser, currentUserImage, commentId, replyId) {
   // Yorumun yanıtlama alanı zaten oluşturulmuşsa, tekrar oluşturmayalım
