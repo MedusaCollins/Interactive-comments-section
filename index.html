@@ -52,6 +52,7 @@
       </div>
     </div>
   </div>
+
   <script>
     
     // 'data' değişkenini global alanda tanımlıyoruz
@@ -65,7 +66,7 @@
 
     var test1 ="200";
     var test2 ="201";
-    var test3 ="3";
+    var test3 ="4";
     var score = "0";
     let createdReplyForms = [];
 
@@ -122,6 +123,7 @@ try {
 
             if (comment.replies && comment.replies.length > 0) {
                 const repliesDiv = document.createElement('div');
+                
                 repliesDiv.setAttribute('class', 'grid border-l-2 ml-12 mt-5 gap-5 border-gray-300');
                 comment.replies.forEach(reply => {
                     const replyId = reply.id;
@@ -129,10 +131,13 @@ try {
                     const replyUsername = reply.user.username;
                     const replyContent = reply.content;
                     const replyCreatedAt = reply.createdAt;
+                    const replyingTo = reply.replyingTo;
                     let replyScore = reply.score;
 
+                    const test444 = document.createElement('div');
                     const replyDiv = document.createElement('div');
                     replyDiv.setAttribute('id', `reply-${replyId}`);
+                    test444.setAttribute('id', `comment-${replyId}`);
                     replyDiv.innerHTML = `
                         <article class="rounded-md w-[95%] ml-auto ">
                             <div class="grid grid-rows-1 grid-flow-col gap-0 bg-white rounded">
@@ -150,15 +155,16 @@ try {
                                             <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${commentId}, ${replyId})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
                                             <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${commentId})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>`
                                             : `<p class="text-[#67727e] mx-5">${comment.createdAt}</p>
-                                            <button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId}, 3)" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
+                                            <button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId}, ${test3})" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
                                     }
                                     </div>
-                                <div class="row-span-2 col-span-1 mb-5 text-[#67727e] reply-content">${replyContent}</div>
+                                <div class="row-span-2 col-span-1 mb-5 text-[#67727e] reply-content"><strong class="text-blue-800">@${replyingTo}</strong> ${replyContent}</div>
                             </div>
                         </article>
                     `;
-
+                    
                     repliesDiv.appendChild(replyDiv);
+                    replyDiv.appendChild(test444);
                 });
 
                 commentDiv.appendChild(repliesDiv);
@@ -181,10 +187,12 @@ try {
         </div>
     `;
     container.innerHTML += currentUserHTML;
-} catch (error) {
+}
+ catch (error) {
     console.error('Error fetching data:', error);
-}
-}
+}}
+
+
 
 function sendNewComment(currentUserUsername, currentUserImage) {
   // Input alanındaki değeri alın
@@ -197,12 +205,12 @@ function sendNewComment(currentUserUsername, currentUserImage) {
 
   // Yeni div'in içeriğini ayarlayın
   newMessage.innerHTML = `
-    <article class="rounded-md w-full mx-auto mt-5 ">
+    <article class="rounded-md w-[95%] ml-auto mt-5">
       <div class="grid grid-rows-1 grid-flow-col bg-white rounded mt-5">
         <div class="row-span-3 my-auto w-6/12 max-w-[30px] flex flex-col mx-5 px-2 bg-[#eaecf1] rounded-md text-[#c3c4ef] font-bold">
-          <button class="hover:text-indigo-700" onclick="increaseScoreReply(${commentId}, ${replyId})">+</button>
-          <strong class="text-[#5457b6]" id="${replyId}">${score}</strong>
-          <button class="hover:text-indigo-700" onclick="decreaseScoreReply(${commentId}, ${replyId})">-</button>
+          <button class="hover:text-indigo-700" onclick="increaseScore(${commentId})">+</button>
+          <strong class="text-[#5457b6]" id="score-${commentId}">${score}</strong>
+          <button class="hover:text-indigo-700" onclick="decreaseScore(${commentId})">-</button>
         </div>
         <div class="col-span-2 flex pr-5 py-5 items-center">
           <img src="${currentUserImage}" alt="${currentUserUsername}" class="w-10 mr-5">
@@ -212,7 +220,7 @@ function sendNewComment(currentUserUsername, currentUserImage) {
           <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${commentId})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>
 
         </div>
-        <div class="comment-content break-all row-span-2 col-span-1 mb-5 text-[#67727e]">${message}</div>
+        <div class="comment-content break-all w-[800px] row-span-2 col-span-1 mb-5 text-[#67727e]">${message}</div>
       </div>
     </article>`;
 
@@ -228,8 +236,73 @@ function sendNewComment(currentUserUsername, currentUserImage) {
   commentId++;
   replyId++;
   inputElement.value = "";
+
+    // Yorumu local storage'a kaydedelim
+    saveToLocalStorage(commentId, replyId, currentUserUsername, currentUserImage, message);
+}
+
+// Local storage'a yorumu kaydetmek için bir fonksiyon ekleyelim
+function saveToLocalStorage(commentId, replyId, currentUserUsername, currentUserImage, message) {
+  const data = {
+    commentId: commentId,
+    replyId: replyId,
+    score:commentId,
+    currentUserUsername: currentUserUsername,
+    currentUserImage: currentUserImage,
+    message: message
+  };
+
+    test1= commentId;
+  // Local storage'a veriyi ekleyelim
+  localStorage.setItem(`comment-${commentId}`, JSON.stringify(data));
 }
   
+function fetchFromLocalStorage() {
+  // LocalStorage'da kayıtlı tüm yorumları alın
+  const allComments = Object.keys(localStorage)
+    .filter(key => key.startsWith("comment-"))
+    .map(key => JSON.parse(localStorage.getItem(key)));
+
+  // Verileri ekrana yansıtın
+  const container = document.getElementById("jsonContainer");
+  container.innerHTML = ''; // Önceki içeriği temizle
+
+  allComments.forEach(commentData => {
+    const commentId = commentData.commentId;
+    const currentUserImage = commentData.currentUserImage;
+    const currentUserUsername = commentData.currentUserUsername;
+    const message = commentData.message;
+
+    const commentDiv = document.createElement('div');
+    commentDiv.setAttribute('id', `comment-${commentId}`);
+    commentDiv.innerHTML = `
+      <article class="rounded-md w-[95%] ml-auto mt-5">
+        <div class="grid grid-rows-1 grid-flow-col gap-0 bg-white rounded">
+          <div class="row-span-3 w-[26px] my-auto flex flex-col mx-5 px-2 bg-[#eaecf1] rounded-md text-[#c3c4ef] font-bold">
+            <button class="hover:text-indigo-700" onclick="increaseScore(${commentId})">+</button>
+            <strong class="text-[#5457b6]" id="score-${commentId}">${score}</strong>
+            <button class="hover:text-indigo-700" onclick="decreaseScore(${commentId})">-</button>
+          </div>
+          <div class="col-span-2 flex pr-5 py-5 items-center">
+            <img src="${currentUserImage}" alt="${currentUserUsername}" class="w-10 mr-5">
+            <strong class=" text-[#324152]">${currentUserUsername}</strong>
+            <div class="text-white text-sm bg-indigo-800 pb-1 px-3 mx-2 rounded">you</div>
+            <p class="text-[#67727e]">now</p>
+            <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${commentId})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
+            <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${commentId})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>
+          </div>
+          <div class="comment-content break-all w-[800px] row-span-2 col-span-1 mb-5 text-[#67727e]">${message}</div>
+        </div>
+      </article>
+    `;
+
+    container.appendChild(commentDiv);
+  });
+}
+
+// Sayfa yüklendiğinde veya başka bir yerde verileri local storage'dan almak için bu fonksiyonu çağırın
+document.addEventListener('DOMContentLoaded', fetchFromLocalStorage);
+
 function replyComment(currentUser, currentUserImage, commentId, replyId) {
   if (isReplying) {
     console.log('reply is already in progress.');
@@ -287,14 +360,14 @@ function submitReplyForm(button, currentUserUsername, currentUserImage, commentI
   repliesDiv.setAttribute('class', '');
   // Create a new div element for the reply
   var newMessage = document.createElement("div");
-  newMessage.setAttribute('id', `comment-${test1}`); //reply-${test2} edit yapılmıyor, comment-${test1} 
+  newMessage.setAttribute('id', `comment-${test1}`); 
   newMessage.innerHTML = `
     <article class="rounded-md w-[95%] ml-auto mt-5">
       <div class="grid grid-rows-1 grid-flow-col gap-0 bg-white rounded">
         <div class="row-span-3 w-[26px] my-auto flex flex-col mx-5 px-2 bg-[#eaecf1] rounded-md text-[#c3c4ef] font-bold">
-          <button class="hover:text-indigo-700" onclick="increaseScoreReply(${commentId}, ${replyId})">+</button>
-          <strong class="text-[#5457b6]" id="score-${replyId}">${score}</strong>
-          <button class="hover:text-indigo-700" onclick="decreaseScoreReply(${commentId}, ${replyId})">-</button>
+          <button class="hover:text-indigo-700" onclick="increaseScoreReply(${commentId}, ${test3})">+</button>
+          <strong class="text-[#5457b6]" id="score-${test3}">${score}</strong>
+          <button class="hover:text-indigo-700" onclick="decreaseScoreReply(${commentId}, ${test3})">-</button>
         </div>
         <div class="col-span-2 flex pr-5 py-5 items-center">
           <img src="${currentUserImage}" alt="${currentUserUsername}" class="w-10 mr-5">
@@ -303,7 +376,7 @@ function submitReplyForm(button, currentUserUsername, currentUserImage, commentI
             <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${test1})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
             <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${test1})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>
           </div>
-          <div class="comment-content break-all row-span-2 col-span-1 mb-5 text-[#67727e]">${replyMessage}</div>
+          <div class="comment-content break-all w-[800px] row-span-2 col-span-1 mb-5 text-[#67727e]">${replyMessage}</div>
         </div>
     </article>
   `;
@@ -340,12 +413,15 @@ parentElement.appendChild(repliesDiv);
   createdReplyForms = createdReplyForms.filter(form => !(form.commentId === commentId && form.replyId === replyId));
 }
 
-// Arttırma ve azaltma işlemleri için fonksiyonlar
 function increaseScore(commentId) {
-const scoreElement = document.getElementById(`score-${commentId}`);
-let score = parseInt(scoreElement.textContent);
-score++;
-scoreElement.textContent = score;
+  const scoreElement = document.getElementById(`score-${commentId}`);
+  if (scoreElement) {
+    let score = parseInt(scoreElement.textContent);
+    score++;
+    scoreElement.textContent = score;
+  } else {
+    console.error(`Score element with ID "score-${commentId}" not found.`);
+  }
 }
 
 function decreaseScore(commentId) {
@@ -415,25 +491,13 @@ function editComment(commentId, replyId) {
 
   // İçeriği düzenleyebilecek input ve kaydet butonunu içeren bir div oluşturalım
   const editDiv = document.createElement('div');
-  editDiv.className = 'w-[700px] my-0 flex p-0 gap-5 grid items-center';
+  editDiv.className = 'my-0 mx-5 flex p-0 gap-5 grid items-center';
   editDiv.appendChild(inputElement);
   editDiv.appendChild(saveButton);
 
   // Mevcut içeriği düzenleme alanını silelim ve yeni düzenleme alanını ekleyelim
   contentElement.innerHTML = '';
   contentElement.appendChild(editDiv);
-}
-
-
-function saveEditedComment(commentId) {
-  const commentDiv = document.getElementById(`comment-${commentId}`);
-  const commentContentElement = commentDiv.querySelector('.comment-content');
-  
-  // Düzenlenmiş yorum içeriğini alıyoruz
-  const editedCommentContent = commentContentElement.querySelector('input').value;
-  
-  // Düzenlenmiş yorum içeriğini gösteriyoruz
-  commentContentElement.innerHTML = editedCommentContent;
 }
 
 function deleteComment(commentId, replyId) {
@@ -451,7 +515,6 @@ function deleteComment(commentId, replyId) {
       // Uyarı mesajını modal olarak göster
       const modal = document.getElementById('myModal');
       modal.style.display = 'flex';
-
       // Sadece yorum id'sini saklayalım
       document.getElementById('commentIdToDelete').value = commentId;
       document.getElementById('replyIdToDelete').value = ''; // replyId boş bırakalım
@@ -462,6 +525,16 @@ function deleteComment(commentId, replyId) {
     test2--;
   }
 
+  function saveEditedComment(commentId) {
+  const commentDiv = document.getElementById(`comment-${commentId}`);
+  const commentContentElement = commentDiv.querySelector('.comment-content');
+  
+  // Düzenlenmiş yorum içeriğini alıyoruz
+  const editedCommentContent = commentContentElement.querySelector('input').value;
+  
+  // Düzenlenmiş yorum içeriğini gösteriyoruz
+  commentContentElement.innerHTML = editedCommentContent;
+}
   // Modalı gizlemek için fonksiyon (aynı kaldı)
   function closeModal() {
     const modal = document.getElementById('myModal');
@@ -491,7 +564,6 @@ function deleteComment(commentId, replyId) {
       }
     }
   }
-
 
 
 // CommentId ve ReplyId'yi birleştirerek benzersiz bir yanıt ID'si oluşturuyoruz
