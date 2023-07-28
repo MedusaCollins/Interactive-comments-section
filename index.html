@@ -65,6 +65,7 @@
 
     var test1 ="200";
     var test2 ="201";
+    var test3 ="3";
     var score = "0";
     let createdReplyForms = [];
 
@@ -108,7 +109,11 @@ try {
                                 <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${commentId})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
                                   <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${commentId})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>`
                                 : `<strong class="text-[#324152] mr-5">${comment.user.username}</strong><p class="text-[#67727e]">${comment.createdAt}</p>
-                                <button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId})" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
+
+                                ${comment.replies && comment.replies.length > 0
+                                    ? `<button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId}, ${test3})" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
+                                    : `<button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId})" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
+                                }`
                         }
                     </div>
                     <div class="comment-content row-span-2 col-span-1 mb-5 text-[#67727e]">${commentContent}</div>
@@ -145,7 +150,7 @@ try {
                                             <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${commentId}, ${replyId})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
                                             <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${commentId})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>`
                                             : `<p class="text-[#67727e] mx-5">${comment.createdAt}</p>
-                                            <button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId}, ${replyId})" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
+                                            <button onclick="replyComment('${currentUser}','${currentUserImage}', ${commentId}, 3)" class="ml-auto flex text-[#5457b6]"><img src="./resource/images/icon-reply.svg" alt="reply button" class="mt-1 mr-2"><strong>Reply</strong></button>`
                                     }
                                     </div>
                                 <div class="row-span-2 col-span-1 mb-5 text-[#67727e] reply-content">${replyContent}</div>
@@ -279,10 +284,10 @@ function submitReplyForm(button, currentUserUsername, currentUserImage, commentI
   var replyMessage = inputElement.value;
 
   var repliesDiv = document.createElement('div');
-  repliesDiv.setAttribute('class', 'grid border-l-2 ml-12 mt-5 gap-5 border-gray-300');
+  repliesDiv.setAttribute('class', '');
   // Create a new div element for the reply
   var newMessage = document.createElement("div");
-  newMessage.setAttribute('id', `reply-${test2}`);
+  newMessage.setAttribute('id', `comment-${test1}`); //reply-${test2} edit yapılmıyor, comment-${test1} 
   newMessage.innerHTML = `
     <article class="rounded-md w-[95%] ml-auto mt-5">
       <div class="grid grid-rows-1 grid-flow-col gap-0 bg-white rounded">
@@ -295,7 +300,7 @@ function submitReplyForm(button, currentUserUsername, currentUserImage, commentI
           <img src="${currentUserImage}" alt="${currentUserUsername}" class="w-10 mr-5">
           <strong class=" text-[#324152]">${currentUserUsername}</strong>
             <div class="text-white text-sm bg-indigo-800 pb-1 px-3 mx-2 rounded">you</div> <p class="text-[#67727e]">now</p>
-            <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${test1}, ${test2})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
+            <button class="ml-auto flex text-red-500 items-center gap-2 mr-3" onclick="deleteComment(${test1})"><img src="./resource/images/icon-delete.svg" alt=""> <strong>Delete</strong></button>
             <button class="ml-3 flex text-[#5457b6] items-center gap-2" onclick="editComment(${test1})"><img src="./resource/images/icon-edit.svg" alt=""><strong>Edit</strong></button>
           </div>
           <div class="comment-content break-all row-span-2 col-span-1 mb-5 text-[#67727e]">${replyMessage}</div>
@@ -303,17 +308,21 @@ function submitReplyForm(button, currentUserUsername, currentUserImage, commentI
     </article>
   `;
   repliesDiv.appendChild(newMessage);
+  
 
-  // Find the parent element where the reply should be appended
-  let parentElement;
-  if (replyId) {
-    // If replying to a reply, find the parent reply div
-    parentElement = document.getElementById(`reply-${replyId}`);
-  } else {
-    // If replying to a comment, find the parent comment container
-    parentElement = document.getElementById(`comment-${commentId}`);
-  }
 
+// Find the parent element where the reply should be appended
+let parentElement;
+if (replyId) {
+  // If replying to a reply, find the parent reply div
+  parentElement = document.getElementById(`reply-${replyId}`);
+} else {
+  // If replying to a comment, find the parent comment container
+  parentElement = document.getElementById(`comment-${commentId}`);
+}
+
+// Append the reply container to the parent element
+parentElement.appendChild(repliesDiv);
   // Append the new reply to the parent element
   parentElement.appendChild(newMessage);
 
@@ -324,6 +333,8 @@ function submitReplyForm(button, currentUserUsername, currentUserImage, commentI
   isReplying = false;
   test1++;
   test2++;
+  test3++;
+  console.log('test3');
 
   // Remove the reply form from the createdReplyForms list
   createdReplyForms = createdReplyForms.filter(form => !(form.commentId === commentId && form.replyId === replyId));
@@ -366,18 +377,22 @@ function editComment(commentId, replyId) {
     return;
   }
 
-  // Edit işlemi başladığında flag'i true yapalım
-  isEditing = true;
-
   const commentDiv = document.getElementById(`comment-${commentId}`);
 
   // Yanıtı düzenliyorsak, yanıtın bulunduğu elementi alalım
   let contentElement;
-  if (replyId) {
-    contentElement = document.getElementById(`reply-${getUniqueReplyId(commentId, replyId)}`).querySelector('.comment-content');
+  if (replyId !== undefined) {
+    contentElement = document.getElementById(`reply-${getUniqueReplyId(commentId, replyId)}`)?.querySelector('.comment-content');
   } else {
-    contentElement = commentDiv.querySelector('.comment-content');
+    contentElement = commentDiv?.querySelector('.comment-content');
   }
+
+  if (!contentElement) {
+    console.error('Content element not found.');
+    return;
+  }
+  // Edit işlemi başladığında flag'i true yapalım
+  isEditing = true;
 
   // Mevcut içeriği alalım
   const currentContent = contentElement.textContent;
